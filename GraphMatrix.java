@@ -37,14 +37,33 @@ public class GraphMatrix {
 
     public static void main(String[] args) {
         
-        GraphMatrix graph = new GraphMatrix(4);
+        
+
+          
+        GraphMatrix graph = new GraphMatrix(9);
 
       
         graph.addEdge(0, 1);
-        graph.addEdge(0, 2);
+        graph.addEdge(0, 7);
         graph.addEdge(1, 2);
-        graph.addEdge(2, 3);
-
+        graph.addEdge(1, 3);
+        graph.addEdge(2, 4);
+        graph.addEdge(2, 5);
+        graph.addEdge(2, 1);
+        graph.addEdge(3, 1);
+        graph.addEdge(3, 4);
+        graph.addEdge(4, 2);
+        graph.addEdge(4, 3);
+        graph.addEdge(4, 6);
+        graph.addEdge(4, 7);
+        graph.addEdge(5, 2);
+        graph.addEdge(5, 6);
+        graph.addEdge(6, 5);
+        graph.addEdge(6, 4);
+        graph.addEdge(7, 0);
+        graph.addEdge(7, 4);
+        graph.addEdge(7, 8);
+        graph.addEdge(8, 7);
         
         graph.printGraph();
     }

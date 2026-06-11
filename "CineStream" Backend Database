@@ -1,0 +1,505 @@
+mysql> CREATE DATABASE CineStream;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> USE CineStream;
+Database changed
+mysql>
+mysql> REATE TABLE Movies (
+    ->     movie_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     title VARCHAR(100) NOT NULL,
+    ->     genre VARCHAR(50) NOT NULL,
+    ->     release_year INT,
+    ->     rental_rate DECIMAL(5,2)
+    -> );
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'REATE TABLE Movies (
+    movie_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARC' at line 1
+mysql> CREATE TABLE Movies (
+    ->     movie_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     title VARCHAR(100) NOT NULL,
+    ->     genre VARCHAR(50) NOT NULL,
+    ->     release_year INT,
+    ->     rental_rate DECIMAL(5,2)
+    -> );
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> CREATE TABLE Users (
+    ->     user_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     username VARCHAR(50) UNIQUE NOT NULL,
+    ->     email VARCHAR(100) UNIQUE NOT NULL,
+    ->     join_date DATE,
+    ->     status VARCHAR(10)
+    -> );
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> CREATE TABLE WatchLog (
+    ->     log_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     user_id INT,
+    ->     movie_id INT,
+    ->     watch_date DATETIME,
+    ->     duration_minutes INT,
+    ->     FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    ->     FOREIGN KEY (movie_id) REFERENCES Movies(movie_id)
+    -> );
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> INSERT INTO Movies (title, genre, release_year, rental_rate) VALUES
+    -> ('Inception', 'Sci-Fi', 2010, 3.99),
+    -> ('Avatar', 'Sci-Fi', 2009, 4.49),
+    -> ('Titanic', 'Romance', 1997, 2.99),
+    -> ('The Dark Knight', 'Action', 2008, 3.99),
+    -> ('Avengers Endgame', 'Action', 2019, 4.99),
+    -> ('Joker', 'Drama', 2019, 3.49),
+    -> ('3 Idiots', 'Comedy', 2009, 2.99),
+    -> ('Dangal', 'Sports', 2016, 3.49),
+    -> ('Bahubali', 'Action', 2015, 4.49),
+    -> ('Interstellar', 'Sci-Fi', 2014, 4.99);
+Query OK, 10 rows affected (0.03 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> SHOW TABLE;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+mysql> SHOW TABLES;
++----------------------+
+| Tables_in_cinestream |
++----------------------+
+| movies               |
+| users                |
+| watchlog             |
++----------------------+
+3 rows in set (0.03 sec)
+
+mysql> INSERT INTO Users (username, email, join_date, status) VALUES
+    -> ('johndoe123', 'john@gmail.com', '2025-01-15', 'Inactive'),
+    -> ('anuj01', 'anuj@gmail.com', '2025-02-10', 'Active'),
+    -> ('rahul02', 'rahul@gmail.com', '2024-12-20', 'Active'),
+    -> ('priya03', 'priya@gmail.com', '2025-03-05', 'Active'),
+    -> ('amit04', 'amit@gmail.com', '2025-04-01', 'Inactive'),
+    -> ('sneha05', 'sneha@gmail.com', '2025-04-10', 'Active'),
+    -> ('rohan06', 'rohan@gmail.com', '2025-05-01', 'Active'),
+    -> ('neha07', 'neha@gmail.com', '2025-05-15', 'Inactive'),
+    -> ('vikas08', 'vikas@gmail.com', '2025-06-01', 'Active'),
+    -> ('johndoe123', 'john@gmail.com', '2025-01-15', 'Inactive');
+ERROR 1062 (23000): Duplicate entry 'johndoe123' for key 'users.username'
+mysql> INSERT INTO WatchLog (user_id, movie_id, watch_date, duration_minutes) VALUES
+    -> (1, 1, '2025-06-01 18:00:00', 148),
+    -> (2, 10, '2025-06-02 19:00:00', 169),
+    -> (3, 5, '2025-06-03 20:00:00', 181),
+    -> (4, 4, '2025-06-04 17:00:00', 152),
+    -> (5, 3, '2025-06-05 21:00:00', 120),
+    -> (6, 7, '2025-06-06 16:00:00', 170),
+    -> (7, 8, '2025-06-07 15:00:00', 161),
+    -> (8, 9, '2025-06-08 18:30:00', 159),
+    -> (9, 2, '2025-06-09 19:30:00', 162),
+    -> (10, 6, '2025-06-10 20:30:00', 122);
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`cinestream`.`watchlog`, CONSTRAINT `watchlog_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`))
+mysql> INSERT INTO Movies (title, genre, release_year, rental_rate)
+    -> VALUES ('Interstellar', 'Sci-Fi', 2014, 4.99);
+Query OK, 1 row affected (0.03 sec)
+
+mysql> SELECT *
+    -> FROM Users
+    -> WHERE join_date > '2025-01-01'
+    -> AND status = 'Active';
+Empty set (0.02 sec)
+
+mysql>
+mysql> -- 3. UPDATE
+mysql> UPDATE Users
+    -> SET status = 'Active'
+    -> WHERE username = 'johndoe123';
+Query OK, 0 rows affected (0.00 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+mysql>
+mysql> -- 4. DELETE
+mysql> DELETE FROM Users
+    -> WHERE status = 'Inactive'
+    -> AND user_id NOT IN (
+    ->     SELECT user_id
+    ->     FROM WatchLog
+    -> );
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT
+    ->     M.genre AS Genre_Name,
+    ->     COUNT(W.log_id) AS Total_Watch_Count
+    -> FROM Movies M
+    -> INNER JOIN WatchLog W
+    -> ON M.movie_id = W.movie_id
+    -> GROUP BY M.genre
+    -> ORDER BY Total_Watch_Count DESC;
+Empty set (0.02 sec)
+
+mysql> SHOW TABLES;
++----------------------+
+| Tables_in_cinestream |
++----------------------+
+| movies               |
+| users                |
+| watchlog             |
++----------------------+
+3 rows in set (0.00 sec)
+
+mysql> SELECT * FROM Movies;
++----------+------------------+---------+--------------+-------------+
+| movie_id | title            | genre   | release_year | rental_rate |
++----------+------------------+---------+--------------+-------------+
+|        1 | Inception        | Sci-Fi  |         2010 |        3.99 |
+|        2 | Avatar           | Sci-Fi  |         2009 |        4.49 |
+|        3 | Titanic          | Romance |         1997 |        2.99 |
+|        4 | The Dark Knight  | Action  |         2008 |        3.99 |
+|        5 | Avengers Endgame | Action  |         2019 |        4.99 |
+|        6 | Joker            | Drama   |         2019 |        3.49 |
+|        7 | 3 Idiots         | Comedy  |         2009 |        2.99 |
+|        8 | Dangal           | Sports  |         2016 |        3.49 |
+|        9 | Bahubali         | Action  |         2015 |        4.49 |
+|       10 | Interstellar     | Sci-Fi  |         2014 |        4.99 |
+|       11 | Interstellar     | Sci-Fi  |         2014 |        4.99 |
++----------+------------------+---------+--------------+-------------+
+11 rows in set (0.00 sec)
+
+mysql> SELECT * FROM Users;
+Empty set (0.00 sec)
+
+mysql> SELECT * FROM WatchLog;
+Empty set (0.00 sec)
+
+mysql>
+mysql>
+mysql> SHOW TABLES;
++----------------------+
+| Tables_in_cinestream |
++----------------------+
+| movies               |
+| users                |
+| watchlog             |
++----------------------+
+3 rows in set (0.00 sec)
+
+mysql> DROP DATABASE;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+mysql> DROP DATABASE CineStream;
+Query OK, 3 rows affected (0.07 sec)
+
+mysql> CREATE DATABASE CineStream;
+Query OK, 1 row affected (0.03 sec)
+
+mysql> USE CineStream;
+Database changed
+mysql> CREATE TABLE Movies (
+    ->     movie_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     title VARCHAR(100) NOT NULL,
+    ->     genre VARCHAR(50) NOT NULL,
+    ->     release_year INT,
+    ->     rental_rate DECIMAL(5,2)
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> CREATE TABLE Users (
+    ->     user_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     username VARCHAR(50) NOT NULL UNIQUE,
+    ->     email VARCHAR(100) NOT NULL UNIQUE,
+    ->     join_date DATE,
+    ->     status VARCHAR(10)
+    -> );
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> CREATE TABLE WatchLog (
+    ->     log_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     user_id INT,
+    ->     movie_id INT,
+    ->     watch_date DATETIME,
+    ->     duration_minutes INT,
+    ->     FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    ->     FOREIGN KEY (movie_id) REFERENCES Movies(movie_id)
+    -> );
+Query OK, 0 rows affected (0.08 sec)
+
+mysql> INSERT INTO Movies (title, genre, release_year, rental_rate)
+    -> VALUES
+    -> ('Inception', 'Sci-Fi', 2010, 3.99),
+    -> ('The Dark Knight', 'Action', 2008, 2.99),
+    -> ('Titanic', 'Romance', 1997, 2.49),
+    -> ('Avengers: Endgame', 'Action', 2019, 4.49);
+Query OK, 4 rows affected (0.02 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> DROP DATABASE CineStream;
+Query OK, 3 rows affected (0.05 sec)
+
+mysql> CREATE DATABASE CineStream;
+Query OK, 1 row affected (0.03 sec)
+
+mysql> USE CineStream;
+Database changed
+mysql> CREATE TABLE Movies (
+    ->     movie_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     title VARCHAR(100) NOT NULL,
+    ->     genre VARCHAR(50) NOT NULL,
+    ->     release_year INT,
+    ->     rental_rate DECIMAL(5,2)
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DESC Movies;
++--------------+--------------+------+-----+---------+----------------+
+| Field        | Type         | Null | Key | Default | Extra          |
++--------------+--------------+------+-----+---------+----------------+
+| movie_id     | int          | NO   | PRI | NULL    | auto_increment |
+| title        | varchar(100) | NO   |     | NULL    |                |
+| genre        | varchar(50)  | NO   |     | NULL    |                |
+| release_year | int          | YES  |     | NULL    |                |
+| rental_rate  | decimal(5,2) | YES  |     | NULL    |                |
++--------------+--------------+------+-----+---------+----------------+
+5 rows in set (0.00 sec)
+
+mysql> CREATE TABLE Users (
+    ->     user_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     username VARCHAR(50) NOT NULL UNIQUE,
+    ->     email VARCHAR(100) NOT NULL UNIQUE,
+    ->     join_date DATE,
+    ->     status VARCHAR(10)
+    -> );
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> DESC Users;
++-----------+--------------+------+-----+---------+----------------+
+| Field     | Type         | Null | Key | Default | Extra          |
++-----------+--------------+------+-----+---------+----------------+
+| user_id   | int          | NO   | PRI | NULL    | auto_increment |
+| username  | varchar(50)  | NO   | UNI | NULL    |                |
+| email     | varchar(100) | NO   | UNI | NULL    |                |
+| join_date | date         | YES  |     | NULL    |                |
+| status    | varchar(10)  | YES  |     | NULL    |                |
++-----------+--------------+------+-----+---------+----------------+
+5 rows in set (0.00 sec)
+
+mysql> CREATE TABLE WatchLog (
+    ->     log_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     user_id INT,
+    ->     movie_id INT,
+    ->     watch_date DATETIME,
+    ->     duration_minutes INT,
+    ->     FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    ->     FOREIGN KEY (movie_id) REFERENCES Movies(movie_id)
+    -> );
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> DESC WatchLog;
++------------------+----------+------+-----+---------+----------------+
+| Field            | Type     | Null | Key | Default | Extra          |
++------------------+----------+------+-----+---------+----------------+
+| log_id           | int      | NO   | PRI | NULL    | auto_increment |
+| user_id          | int      | YES  | MUL | NULL    |                |
+| movie_id         | int      | YES  | MUL | NULL    |                |
+| watch_date       | datetime | YES  |     | NULL    |                |
+| duration_minutes | int      | YES  |     | NULL    |                |
++------------------+----------+------+-----+---------+----------------+
+5 rows in set (0.00 sec)
+
+mysql> SHOW TABLES;
++----------------------+
+| Tables_in_cinestream |
++----------------------+
+| movies               |
+| users                |
+| watchlog             |
++----------------------+
+3 rows in set (0.00 sec)
+
+mysql> INSERT INTO Movies (title, genre, release_year, rental_rate)
+    -> VALUES
+    -> ('Inception', 'Sci-Fi', 2010, 3.99),
+    -> ('The Dark Knight', 'Action', 2008, 2.99),
+    -> ('Titanic', 'Romance', 1997, 2.49),
+    -> ('Avengers: Endgame', 'Action', 2019, 4.49),
+    -> ('Interstellar', 'Sci-Fi', 2014, 4.99),
+    -> ('The Conjuring', 'Horror', 2013, 3.49),
+    -> ('Frozen', 'Animation', 2013, 2.99),
+    -> ('Joker', 'Drama', 2019, 3.99),
+    -> ('Top Gun: Maverick', 'Action', 2022, 4.99),
+    -> ('Coco', 'Animation', 2017, 3.49);
+Query OK, 10 rows affected (0.03 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Movies;
++----------+-------------------+-----------+--------------+-------------+
+| movie_id | title             | genre     | release_year | rental_rate |
++----------+-------------------+-----------+--------------+-------------+
+|        1 | Inception         | Sci-Fi    |         2010 |        3.99 |
+|        2 | The Dark Knight   | Action    |         2008 |        2.99 |
+|        3 | Titanic           | Romance   |         1997 |        2.49 |
+|        4 | Avengers: Endgame | Action    |         2019 |        4.49 |
+|        5 | Interstellar      | Sci-Fi    |         2014 |        4.99 |
+|        6 | The Conjuring     | Horror    |         2013 |        3.49 |
+|        7 | Frozen            | Animation |         2013 |        2.99 |
+|        8 | Joker             | Drama     |         2019 |        3.99 |
+|        9 | Top Gun: Maverick | Action    |         2022 |        4.99 |
+|       10 | Coco              | Animation |         2017 |        3.49 |
++----------+-------------------+-----------+--------------+-------------+
+10 rows in set (0.00 sec)
+
+mysql> INSERT INTO Users (username, email, join_date, status)
+    -> VALUES
+    -> ('johndoe123', 'john@gmail.com', 'Inactive'),
+    -> ('alice99', 'alice@gmail.com', '2025-03-10', 'Active'),
+    -> ('mike007', 'mike@gmail.com', '2024-11-20', 'Active'),
+    -> ('sarah22', 'sarah@gmail.com', '2025-05-05', 'Inactive'),
+    -> ('emma_w', 'emma@gmail.com', '2025-01-18', 'Active'),
+    -> ('david89', 'david@gmail.com', '2025-04-12', 'Active'),
+    -> ('olivia_k', 'olivia@gmail.com', '2024-12-25', 'Inactive'),
+    -> ('ryan23', 'ryan@gmail.com', '2025-06-01', 'Active'),
+    -> ('sophia_m', 'sophia@gmail.com', '2025-02-28', 'Active'),
+    -> ('daniel77', 'daniel@gmail.com', '2025-03-22', 'Inactive');
+ERROR 1136 (21S01): Column count doesn't match value count at row 1
+mysql> ('johndoe123', 'john@gmail.com', '2025-02-15', 'Inactive')
+    -> INSERT INTO Users (username, email, join_date, status)
+    -> VALUES
+    -> ('johndoe123', 'john@gmail.com', '2025-02-15', 'Inactive'),
+    -> ('alice99', 'alice@gmail.com', '2025-03-10', 'Active'),
+    -> ('mike007', 'mike@gmail.com', '2024-11-20', 'Active'),
+    -> ('sarah22', 'sarah@gmail.com', '2025-05-05', 'Inactive'),
+    -> ('emma_w', 'emma@gmail.com', '2025-01-18', 'Active'),
+    -> ('david89', 'david@gmail.com', '2025-04-12', 'Active'),
+    -> ('olivia_k', 'olivia@gmail.com', '2024-12-25', 'Inactive'),
+    -> ('ryan23', 'ryan@gmail.com', '2025-06-01', 'Active'),
+    -> ('sophia_m', 'sophia@gmail.com', '2025-02-28', 'Active'),
+    -> ('daniel77', 'daniel@gmail.com', '2025-03-22', 'Inactive');
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''johndoe123', 'john@gmail.com', '2025-02-15', 'Inactive')
+INSERT INTO Users (use' at line 1
+mysql> INSERT INTO Users (username, email, join_date, status)
+    -> VALUES
+    -> ('johndoe123', 'john@gmail.com', '2025-02-15', 'Inactive'),
+    -> ('alice99', 'alice@gmail.com', '2025-03-10', 'Active'),
+    -> ('mike007', 'mike@gmail.com', '2024-11-20', 'Active'),
+    -> ('sarah22', 'sarah@gmail.com', '2025-05-05', 'Inactive'),
+    -> ('emma_w', 'emma@gmail.com', '2025-01-18', 'Active'),
+    -> ('david89', 'david@gmail.com', '2025-04-12', 'Active'),
+    -> ('olivia_k', 'olivia@gmail.com', '2024-12-25', 'Inactive'),
+    -> ('ryan23', 'ryan@gmail.com', '2025-06-01', 'Active'),
+    -> ('sophia_m', 'sophia@gmail.com', '2025-02-28', 'Active'),
+    -> ('daniel77', 'daniel@gmail.com', '2025-03-22', 'Inactive');
+Query OK, 10 rows affected (0.03 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO WatchLog (user_id, movie_id, watch_date, duration_minutes)
+    -> VALUES
+    -> (1,1,'2025-06-01 20:00:00',148),
+    -> (2,2,'2025-06-02 19:30:00',152),
+    -> (3,3,'2025-06-03 18:15:00',120),
+    -> (4,4,'2025-06-04 21:00:00',181),
+    -> (5,5,'2025-06-05 20:45:00',169),
+    -> (6,6,'2025-06-06 22:00:00',112),
+    -> (7,7,'2025-06-07 17:30:00',102),
+    -> (8,8,'2025-06-08 21:15:00',122),
+    -> (9,9,'2025-06-09 19:00:00',130),
+    -> (10,10,'2025-06-10 16:45:00',105);
+Query OK, 10 rows affected (0.03 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM WatchLog;
++--------+---------+----------+---------------------+------------------+
+| log_id | user_id | movie_id | watch_date          | duration_minutes |
++--------+---------+----------+---------------------+------------------+
+|      1 |       1 |        1 | 2025-06-01 20:00:00 |              148 |
+|      2 |       2 |        2 | 2025-06-02 19:30:00 |              152 |
+|      3 |       3 |        3 | 2025-06-03 18:15:00 |              120 |
+|      4 |       4 |        4 | 2025-06-04 21:00:00 |              181 |
+|      5 |       5 |        5 | 2025-06-05 20:45:00 |              169 |
+|      6 |       6 |        6 | 2025-06-06 22:00:00 |              112 |
+|      7 |       7 |        7 | 2025-06-07 17:30:00 |              102 |
+|      8 |       8 |        8 | 2025-06-08 21:15:00 |              122 |
+|      9 |       9 |        9 | 2025-06-09 19:00:00 |              130 |
+|     10 |      10 |       10 | 2025-06-10 16:45:00 |              105 |
++--------+---------+----------+---------------------+------------------+
+10 rows in set (0.00 sec)
+
+mysql> INSERT INTO Movies (title, genre, release_year, rental_rate)
+    -> VALUES ('Interstellar', 'Sci-Fi', 2014, 4.99);
+Query OK, 1 row affected (0.02 sec)
+
+mysql> SELECT *
+    -> FROM Users
+    -> WHERE join_date > '2025-01-01'
+    -> AND status='Active';
++---------+----------+------------------+------------+--------+
+| user_id | username | email            | join_date  | status |
++---------+----------+------------------+------------+--------+
+|       2 | alice99  | alice@gmail.com  | 2025-03-10 | Active |
+|       5 | emma_w   | emma@gmail.com   | 2025-01-18 | Active |
+|       6 | david89  | david@gmail.com  | 2025-04-12 | Active |
+|       8 | ryan23   | ryan@gmail.com   | 2025-06-01 | Active |
+|       9 | sophia_m | sophia@gmail.com | 2025-02-28 | Active |
++---------+----------+------------------+------------+--------+
+5 rows in set (0.00 sec)
+
+mysql> UPDATE Users
+    -> SET status='Active'
+    -> WHERE username='johndoe123';
+Query OK, 1 row affected (0.02 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM Users;
++---------+------------+------------------+------------+----------+
+| user_id | username   | email            | join_date  | status   |
++---------+------------+------------------+------------+----------+
+|       1 | johndoe123 | john@gmail.com   | 2025-02-15 | Active   |
+|       2 | alice99    | alice@gmail.com  | 2025-03-10 | Active   |
+|       3 | mike007    | mike@gmail.com   | 2024-11-20 | Active   |
+|       4 | sarah22    | sarah@gmail.com  | 2025-05-05 | Inactive |
+|       5 | emma_w     | emma@gmail.com   | 2025-01-18 | Active   |
+|       6 | david89    | david@gmail.com  | 2025-04-12 | Active   |
+|       7 | olivia_k   | olivia@gmail.com | 2024-12-25 | Inactive |
+|       8 | ryan23     | ryan@gmail.com   | 2025-06-01 | Active   |
+|       9 | sophia_m   | sophia@gmail.com | 2025-02-28 | Active   |
+|      10 | daniel77   | daniel@gmail.com | 2025-03-22 | Inactive |
++---------+------------+------------------+------------+----------+
+10 rows in set (0.00 sec)
+
+mysql> DELETE FROM Users
+    -> WHERE status='Inactive'
+    -> AND user_id NOT IN (
+    ->     SELECT user_id
+    ->     FROM WatchLog
+    -> );
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT * FROM Users;
++---------+------------+------------------+------------+----------+
+| user_id | username   | email            | join_date  | status   |
++---------+------------+------------------+------------+----------+
+|       1 | johndoe123 | john@gmail.com   | 2025-02-15 | Active   |
+|       2 | alice99    | alice@gmail.com  | 2025-03-10 | Active   |
+|       3 | mike007    | mike@gmail.com   | 2024-11-20 | Active   |
+|       4 | sarah22    | sarah@gmail.com  | 2025-05-05 | Inactive |
+|       5 | emma_w     | emma@gmail.com   | 2025-01-18 | Active   |
+|       6 | david89    | david@gmail.com  | 2025-04-12 | Active   |
+|       7 | olivia_k   | olivia@gmail.com | 2024-12-25 | Inactive |
+|       8 | ryan23     | ryan@gmail.com   | 2025-06-01 | Active   |
+|       9 | sophia_m   | sophia@gmail.com | 2025-02-28 | Active   |
+|      10 | daniel77   | daniel@gmail.com | 2025-03-22 | Inactive |
++---------+------------+------------------+------------+----------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT
+    ->     M.genre,
+    ->     COUNT(W.log_id) AS Total_Watches
+    -> FROM Movies M
+    -> INNER JOIN WatchLog W
+    -> ON M.movie_id = W.movie_id
+    -> GROUP BY M.genre
+    -> ORDER BY Total_Watches DESC;
++-----------+---------------+
+| genre     | Total_Watches |
++-----------+---------------+
+| Action    |             3 |
+| Sci-Fi    |             2 |
+| Animation |             2 |
+| Romance   |             1 |
+| Horror    |             1 |
+| Drama     |             1 |
++-----------+---------------+
+6 rows in set (0.02 sec)
+
+mysql>
